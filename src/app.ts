@@ -35,8 +35,8 @@ if (process.argv.includes("--help")) {
 }
 app.use(bodyParser.json())
 app.use((req, res, next) => {
-    const oldWrite = res.write,
-        oldEnd = res.end;
+    const oldWrite = res.write
+    const oldEnd = res.end;
 
     const chunks = [];
 
@@ -108,7 +108,7 @@ app.use("*", proxy(host, {
     proxyReqPathResolver: req => req.originalUrl,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
         if (overrideHost) {
-            proxyReqOpts.headers['Host'] = overrideHost;
+            proxyReqOpts.host = overrideHost;
         }
         return proxyReqOpts
     }
