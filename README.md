@@ -8,7 +8,6 @@ An HTTP server that proxies the request to other HTTP(S) server and logs the ent
 docker run --rm --name proxy -d \
  -e PROXY_HOST=example.com \
  -e PROXY_HTTPS=true \
- -e PROXY_OVERRIDE_HOST=example.com \
  -p 15000:15000 guyeise5/proxy
  
 docker logs proxy
@@ -61,7 +60,6 @@ docker run --name proxy -d \
  --network my-network \
  -e PROXY_HOST=example.com \
  -e PROXY_HTTPS=true \
- -e PROXY_OVERRIDE_HOST=example.com \
  -p 15000:15000 guyeise5/proxy
 ```
 
