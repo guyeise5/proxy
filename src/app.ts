@@ -1,6 +1,5 @@
 import express from 'express';
 import proxy from 'express-http-proxy'
-import bodyParser from "body-parser";
 
 import util from "util";
 
@@ -33,7 +32,6 @@ if (process.argv.includes("--help")) {
     printHelp()
     process.exit(0)
 }
-app.use(bodyParser.json())
 app.use((req, res, next) => {
     const oldWrite = res.write
     const oldEnd = res.end;
@@ -68,30 +66,30 @@ let seq = 0
 app.use("*", (req, res, next) => {
     seq = seq + 1
     const startTime = new Date().getTime()
-    const body = req.body
-    const request = {
-        ip: req.ip,
-        path: req.originalUrl,
-        headers: req.headers,
-        method: req.method,
-        body: body
-    };
 
     res.on('finish', () => {
         const endTime = new Date().getTime()
-        // @ts-ignore
-        // @ts-ignore
+        const request = {
+            ip: req.ip,
+            path: req.originalUrl,
+            headers: req.headers,
+            method: req.method,
+            body: req.body
+        };
+
+        const response = {
+            status: res.statusCode,
+            headers: Object.fromEntries(Object.entries(res.getHeaders())),
+            //@ts-ignore
+            body: res.body
+        }
+
         console.log(util.inspect({
             rtt: endTime - startTime,
             seq: seq,
             request: request,
-            response: {
-                status: res.statusCode,
-                headers: Object.fromEntries(Object.entries(res.getHeaders())),
-                //@ts-ignore
-                body: res.body
-            }
-        }, {showHidden: false, depth: null, colors: true}))
+            response: response
+        }, {showHidden: false, depth: null, colors: true, }))
     })
     next()
 })
@@ -111,8 +109,16 @@ app.use("*", proxy(host, {
             proxyReqOpts.host = overrideHost;
         }
         return proxyReqOpts
+    },
+    proxyReqBodyDecorator: (bodyContent, req) => {
+        if(bodyContent instanceof Buffer) {
+            req.body = new TextDecoder().decode(bodyContent)
+        }
+
+        return bodyContent
     }
 }))
+
 
 
 app.listen(port, () => {
